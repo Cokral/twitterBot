@@ -7,10 +7,10 @@ var TwitterPackage = require('twitter');
 
 //Should be removed if i put this on github
 var secret = {
-	consumer_key: '',
-	consumer_secret: '',
-	access_token_key: '',
-	access_token_secret: ''
+	consumer_key: 'f8SyLId1nj0tavxZMZp3fwETH',
+	consumer_secret: 's10OOVFfY2X47Wh4yfNGlxCLmuMrV9bYm186QLQR2aFFSJjl9t',
+	access_token_key: '776409978793897984-5qrykaQ75I9tNLX0DdZPovQqTlBS3Z8',
+	access_token_secret: 'YSdVdiLXmju7UafGP9ALj3IpPwGmnlYRZDPfEqIvCUpD4'
 }
 
 var Twitter = new TwitterPackage(secret);
@@ -27,10 +27,16 @@ var Twitter = new TwitterPackage(secret);
 //Listen to a certain #
 Twitter.stream('statuses/filter', {track: '#giveaway'}, function(stream) {
   stream.on('data', function(tweet) {
-  	if (tweet.name != "Joso le minou") {
+  	if (tweet.user.name != "Joso le minou") {
   		if (checkIfRetweetNeeded(tweet.text)){
-  			console.log("Je retweet.");
+
   			retweet(tweet.id_str, tweet.user.name);
+
+  			//favorite(tweet.id_str);
+
+  			follow(tweet.user.id_str);
+
+  			console.log("...");
   		}
   	}
   	
@@ -44,17 +50,37 @@ Twitter.stream('statuses/filter', {track: '#giveaway'}, function(stream) {
 
 //Retweet function, takes tweet.id_str + tweet.name 
 function retweet(tweetId, name) {
-	console.log("Retweet de : " + name +'\n');
-	Twitter.post('statuses/favorite/' + tweetId, function(error, tweet, response){
+	Twitter.post('statuses/retweet/' + tweetId, function(error, tweet, response){
 		if (error){
+			console.log("\n----RETWEET----");
+			console.log("name: " + name);
 			console.log(error);
 		}
 	});	
 }
 
+//Follow function, takes tweet.user.id
+function follow(userId){
+	Twitter.post('friendships/create/',{id: userId}, function(error){
+		if(error){
+			console.log("\n----FOLLOW----");
+			console.log(userId);
+			console.log(error);
+		}
+	})
+}
+
+function favorite(tweetId) {
+	Twitter.post('favorites/create/'+{id: tweetId}, function(error, tweet, response){
+		if (error){
+			console.log("\n----FAVORITE----");
+			console.log(error);
+		}
+	})
+}
+
 function checkIfRetweetNeeded(tweet) {
 
-	console.log("Je check en ce moment.");
 	var arrayRT = ["RT", "RETWEET","LIKE", "FAVORITE"];
 	tweet = tweet.toUpperCase();
 
